@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { authService, type User as ApiUser } from "@/lib/api";
 
 type UserType = "adopter" | "ong";
 
@@ -7,46 +8,93 @@ interface User {
   name: string;
   email: string;
   type: UserType;
+  cpf?: string;
+  cnpj?: string;
+  phone?: string;
+  city?: string;
+  state?: string;
+  description?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string, type: UserType) => Promise<boolean>;
+  isLoading: boolean;
+  login: (email: string, password: string, type: UserType) => Promise<void>;
+  register: (userData: any) => Promise<void>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(() => {
-    // Recuperar do localStorage se existir
-    const savedUser = localStorage.getItem("user");
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
+// Converter User da API para User do contexto
+const mapApiUserToContextUser = (apiUser: ApiUser): User => ({
+  id: apiUser.id,
+  name: apiUser.name,
+  email: apiUser.email,
+  type: apiUser.user_type,
+  cpf: apiUser.cpf,
+  cnpj: apiUser.cnpj,
+  phone: apiUser.phone,
+  city: apiUser.city,
+  state: apiUser.state,
+  description: apiUser.description,
+});
 
-  const login = async (email: string, password: string, type: UserType): Promise<boolean> => {
-    // Simulação de login - aqui você faria a chamada à API
-    // Por enquanto, aceita qualquer combinação
-    if (email && password) {
-      const mockUser: User = {
-        id: "1",
-        name: type === "ong" ? "ONG Patinhas Felizes" : "João Silva",
-        email: email,
-        type: type,
-      };
-      
-      setUser(mockUser);
-      localStorage.setItem("user", JSON.stringify(mockUser));
-      return true;
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Verificar se já existe um usuário logado ao carregar
+  useEffect(() => {
+    const initAuth = () => {
+      try {
+        const currentUser = authService.getCurrentUser();
+        if (currentUser) {
+          setUser(mapApiUserToContextUser(currentUser));
+        }
+      } catch (error) {
+        console.error('Erro ao recuperar usuário:', error);
+        authService.logout();
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initAuth();
+  }, []);
+
+  const login = async (email: string, password: string, type: UserType): Promise<void> => {
+    try {
+      const response = await authService.login(email, password, type);
+      const contextUser = mapApiUserToContextUser(response.user);
+      setUser(contextUser);
+    } catch (error: any) {
+      console.error('Erro no login:', error);
+      throw new Error(
+        error.response?.data?.message || 
+        'Erro ao fazer login. Verifique suas credenciais.'
+      );
     }
-    
-    return false;
+  };
+
+  const register = async (userData: any): Promise<void> => {
+    try {
+      const response = await authService.register(userData);
+      const contextUser = mapApiUserToContextUser(response.user);
+      setUser(contextUser);
+    } catch (error: any) {
+      console.error('Erro no registro:', error);
+      throw new Error(
+        error.response?.data?.message || 
+        'Erro ao criar conta. Tente novamente.'
+      );
+    }
   };
 
   const logout = () => {
+    authService.logout();
     setUser(null);
-    localStorage.removeItem("user");
   };
 
   return (
@@ -54,7 +102,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       value={{
         user,
         isAuthenticated: !!user,
+        isLoading,
         login,
+        register,
         logout,
       }}
     >

@@ -25,28 +25,20 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const success = await login(email, password, userType);
+      await login(email, password, userType);
       
-      if (success) {
-        toast({
-          title: "Login realizado com sucesso!",
-          description: `Bem-vindo${userType === "ong" ? "a" : ""} de volta!`,
-        });
-        
-        // Redireciona para o dashboard apropriado
-        navigate(userType === "ong" ? "/ong-dashboard" : "/adopter-dashboard");
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Erro no login",
-          description: "Email ou senha incorretos.",
-        });
-      }
-    } catch (error) {
+      toast({
+        title: "Login realizado com sucesso!",
+        description: `Bem-vindo${userType === "ong" ? "a" : ""} de volta!`,
+      });
+      
+      // Redireciona para o dashboard apropriado
+      navigate(userType === "ong" ? "/ong-dashboard" : "/adopter-dashboard");
+    } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Erro no login",
-        description: "Ocorreu um erro ao tentar fazer login. Tente novamente.",
+        description: error.message || "Verifique suas credenciais e tente novamente.",
       });
     } finally {
       setIsLoading(false);

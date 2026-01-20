@@ -1,0 +1,12 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^mkdir -p api && cd api && npx -y @nestjs/cli new \\. --package-manager npm --skip-git$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^npm install --save @supabase/supabase-js @nestjs/config @nestjs/passport @nestjs/jwt passport passport-jwt bcrypt class-validator class-transformer$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

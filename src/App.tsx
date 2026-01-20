@@ -8,11 +8,14 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Pets from "./pages/Pets";
 import PetDetail from "./pages/PetDetail";
+import PetDetailPage from "./pages/PetDetailPage";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import AdoptionForm from "./pages/AdoptionForm";
 import AdopterDashboard from "./pages/AdopterDashboard";
 import ONGDashboard from "./pages/ONGDashboard";
+import CreatePet from "./pages/CreatePet";
+import EditPet from "./pages/EditPet";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +31,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/pets" element={<Pets />} />
             <Route path="/pets/:id" element={<PetDetail />} />
+            <Route path="/pet/:id" element={<PetDetailPage />} />
             <Route path="/pets/:id/adopt" element={<AdoptionForm />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
@@ -44,6 +48,22 @@ const App = () => (
               element={
                 <ProtectedRoute requiredType="ong">
                   <ONGDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/cadastrar-pet" 
+              element={
+                <ProtectedRoute requiredType="ong">
+                  <CreatePet />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/editar-pet/:id" 
+              element={
+                <ProtectedRoute requiredType="ong">
+                  <EditPet />
                 </ProtectedRoute>
               } 
             />
