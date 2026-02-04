@@ -5,7 +5,7 @@ import { Heart, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface PetCardProps {
-  id: number;
+  id: string | number;
   name: string;
   age: string;
   species: string;

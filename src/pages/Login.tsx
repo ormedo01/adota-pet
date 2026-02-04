@@ -15,7 +15,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [userType, setUserType] = useState<"adopter" | "ong">("adopter");
+  const [userType, setUserType] = useState<"adopter" | "ong" | "admin">("adopter");
   const { login } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -26,19 +26,29 @@ const Login = () => {
 
     try {
       await login(email, password, userType);
-      
+
       toast({
         title: "Login realizado com sucesso!",
         description: `Bem-vindo${userType === "ong" ? "a" : ""} de volta!`,
       });
-      
+
       // Redireciona para o dashboard apropriado
-      navigate(userType === "ong" ? "/ong-dashboard" : "/adopter-dashboard");
+      if (userType === "ong") {
+        navigate("/ong-dashboard");
+      } else if (userType === "admin") {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/adopter-dashboard");
+      }
     } catch (error: any) {
+      console.error("Login error:", error);
+      const message = error.response?.data?.message;
+      const displayMessage = Array.isArray(message) ? message.join(', ') : (message || error.message || "Verifique suas credenciais e tente novamente.");
+
       toast({
         variant: "destructive",
         title: "Erro no login",
-        description: error.message || "Verifique suas credenciais e tente novamente.",
+        description: displayMessage,
       });
     } finally {
       setIsLoading(false);
@@ -48,7 +58,7 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-muted/20">
       <Header />
-      
+
       <div className="container py-16 flex items-center justify-center">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
@@ -61,8 +71,8 @@ const Login = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Tabs value={userType} onValueChange={(value) => setUserType(value as "adopter" | "ong")} className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
+            <Tabs value={userType} onValueChange={(value) => setUserType(value as "adopter" | "ong" | "admin")} className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="adopter" className="gap-2">
                   <User className="h-4 w-4" />
                   Adotante
@@ -71,22 +81,26 @@ const Login = () => {
                   <Building2 className="h-4 w-4" />
                   ONG
                 </TabsTrigger>
+                <TabsTrigger value="admin" className="gap-2">
+                  <User className="h-4 w-4" />
+                  Admin
+                </TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="adopter" className="space-y-4 mt-6">
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="email-adopter">Email</Label>
-                    <Input 
-                      id="email-adopter" 
-                      type="email" 
+                    <Input
+                      id="email-adopter"
+                      type="email"
                       placeholder="seu@email.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <Label htmlFor="password-adopter">Senha</Label>
@@ -94,9 +108,9 @@ const Login = () => {
                         Esqueceu?
                       </Link>
                     </div>
-                    <Input 
-                      id="password-adopter" 
-                      type="password" 
+                    <Input
+                      id="password-adopter"
+                      type="password"
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -109,21 +123,21 @@ const Login = () => {
                   </Button>
                 </form>
               </TabsContent>
-              
+
               <TabsContent value="ong" className="space-y-4 mt-6">
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="email-ong">Email da ONG</Label>
-                    <Input 
-                      id="email-ong" 
-                      type="email" 
+                    <Input
+                      id="email-ong"
+                      type="email"
                       placeholder="contato@ong.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <Label htmlFor="password-ong">Senha</Label>
@@ -131,9 +145,9 @@ const Login = () => {
                         Esqueceu?
                       </Link>
                     </div>
-                    <Input 
-                      id="password-ong" 
-                      type="password" 
+                    <Input
+                      id="password-ong"
+                      type="password"
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -143,6 +157,40 @@ const Login = () => {
 
                   <Button className="w-full" size="lg" type="submit" variant="secondary" disabled={isLoading}>
                     {isLoading ? "Entrando..." : "Entrar como ONG"}
+                  </Button>
+                </form>
+              </TabsContent>
+
+              <TabsContent value="admin" className="space-y-4 mt-6">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email-admin">Email Administrativo</Label>
+                    <Input
+                      id="email-admin"
+                      type="email"
+                      placeholder="admin@adotapet.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="password-admin">Senha</Label>
+                    </div>
+                    <Input
+                      id="password-admin"
+                      type="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <Button className="w-full" size="lg" type="submit" variant="destructive" disabled={isLoading}>
+                    {isLoading ? "Entrando..." : "Entrar como Admin"}
                   </Button>
                 </form>
               </TabsContent>

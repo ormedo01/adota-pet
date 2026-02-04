@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { CreatePetDto } from './dto/create-pet.dto';
 import { UpdatePetDto } from './dto/update-pet.dto';
@@ -6,7 +6,7 @@ import { FilterPetsDto } from './dto/filter-pets.dto';
 
 @Injectable()
 export class PetsService {
-  constructor(private supabaseService: SupabaseService) {}
+  constructor(private supabaseService: SupabaseService) { }
 
   async create(ongId: string, createPetDto: CreatePetDto) {
     const supabase = this.supabaseService.getClient();
@@ -22,6 +22,7 @@ export class PetsService {
       // Mapear 'temperament' para 'personality' (campo que existe no banco)
       personality: temperament || createPetDto.personality,
       // city e state são ignorados pois vêm da ONG, não do pet
+      image_url: restDto.image_url || (photos && photos.length > 0 ? photos[0] : null),
     };
 
     const { data, error } = await supabase
@@ -31,7 +32,7 @@ export class PetsService {
       .single();
 
     if (error) {
-      throw new Error(`Erro ao criar pet: ${error.message}`);
+      throw new BadRequestException(`Erro ao criar pet: ${error.message} - ${error.details || ''} - ${error.hint || ''}`);
     }
 
     return data;

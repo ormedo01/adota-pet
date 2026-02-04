@@ -47,7 +47,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  user_type: 'adopter' | 'ong';
+  user_type: 'adopter' | 'ong' | 'admin';
   cpf?: string;
   cnpj?: string;
   birth_date?: string;
@@ -67,7 +67,7 @@ export interface RegisterDto {
   email: string;
   password: string;
   name: string;
-  user_type: 'adopter' | 'ong';
+  user_type: 'adopter' | 'ong' | 'admin';
   cpf?: string;
   cnpj?: string;
   birth_date?: string;
@@ -106,26 +106,32 @@ export interface AdoptionApplication {
   id: string;
   pet_id: string;
   user_id: string;
-  status: 'pending' | 'under_review' | 'approved' | 'rejected';
-  
+  status: 'pending' | 'under_review' | 'approved' | 'rejected' | 'cancelled';
+
+  // Fields from joined view
+  pet_name?: string;
+  pet_image_url?: string;
+  ong_name?: string;
+  submitted_at?: string; // or created_at
+
   // Step 1
   has_experience: boolean;
   has_other_pets: boolean;
   other_pets_description?: string;
-  
+
   // Step 2
   residence_type: 'house' | 'apartment' | 'farm' | 'other';
   has_yard: boolean;
   yard_fenced?: boolean;
-  
+
   // Step 3
   family_agreed: boolean;
   can_afford_expenses: boolean;
   aware_of_responsibilities: boolean;
-  
+
   // Step 4
   additional_info?: string;
-  
+
   created_at?: string;
   updated_at?: string;
 }
@@ -135,6 +141,7 @@ export interface Favorite {
   user_id: string;
   pet_id: string;
   created_at: string;
+  pet?: Pet; // Join result
 }
 
 // ============================================
@@ -142,27 +149,27 @@ export interface Favorite {
 // ============================================
 
 export const authService = {
-  async login(email: string, password: string, user_type: 'adopter' | 'ong'): Promise<LoginResponse> {
+  async login(email: string, password: string, user_type: 'adopter' | 'ong' | 'admin'): Promise<LoginResponse> {
     const { data } = await api.post<LoginResponse>('/auth/login', {
       email,
       password,
       user_type,
     });
-    
+
     // Salvar token e usuário no localStorage
     localStorage.setItem('token', data.access_token);
     localStorage.setItem('user', JSON.stringify(data.user));
-    
+
     return data;
   },
 
   async register(userData: RegisterDto): Promise<LoginResponse> {
     const { data } = await api.post<LoginResponse>('/auth/register', userData);
-    
+
     // Salvar token e usuário no localStorage
     localStorage.setItem('token', data.access_token);
     localStorage.setItem('user', JSON.stringify(data.user));
-    
+
     return data;
   },
 
@@ -193,13 +200,13 @@ export const userService = {
 
   async updateMe(userData: Partial<User>): Promise<User> {
     const { data } = await api.patch<User>('/users/me', userData);
-    
+
     // Atualizar usuário no localStorage
     const currentUser = authService.getCurrentUser();
     if (currentUser) {
       localStorage.setItem('user', JSON.stringify({ ...currentUser, ...data }));
     }
-    
+
     return data;
   },
 
@@ -302,8 +309,8 @@ export const applicationService = {
 // ============================================
 
 export const favoriteService = {
-  async getFavorites(): Promise<Pet[]> {
-    const { data } = await api.get<Pet[]>('/favorites');
+  async getFavorites(): Promise<Favorite[]> {
+    const { data } = await api.get<Favorite[]>('/favorites');
     return data;
   },
 
@@ -343,6 +350,51 @@ export const uploadService = {
     });
 
     return data.url;
+  },
+};
+
+export const adminService = {
+  async getDashboardStats(): Promise<any> {
+    const { data } = await api.get('/admin/dashboard');
+    return data;
+  },
+
+  async getAllUsers(): Promise<User[]> {
+    const { data } = await api.get<User[]>('/admin/users');
+    return data;
+  },
+
+  async createUser(userData: RegisterDto): Promise<User> {
+    const { data } = await api.post<User>('/admin/users', userData);
+    return data;
+  },
+
+  async updateUser(id: string, userData: Partial<User & { password?: string }>): Promise<User> {
+    const { data } = await api.patch<User>(`/admin/users/${id}`, userData);
+    return data;
+  },
+
+  async deleteUser(id: string): Promise<void> {
+    await api.delete(`/admin/users/${id}`);
+  },
+
+  async getAllPets(): Promise<Pet[]> {
+    const { data } = await api.get<Pet[]>('/admin/pets');
+    return data;
+  },
+
+  async createPet(petData: Partial<Pet>): Promise<Pet> {
+    const { data } = await api.post<Pet>('/admin/pets', petData);
+    return data;
+  },
+
+  async updatePet(id: string, petData: Partial<Pet>): Promise<Pet> {
+    const { data } = await api.patch<Pet>(`/admin/pets/${id}`, petData);
+    return data;
+  },
+
+  async deletePet(id: string): Promise<void> {
+    await api.delete(`/admin/pets/${id}`);
   },
 };
 

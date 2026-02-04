@@ -8,7 +8,7 @@ import { ShieldAlert } from "lucide-react";
 
 interface ProtectedRouteProps {
   children: ReactNode;
-  requiredType?: "adopter" | "ong";
+  requiredType?: "adopter" | "ong" | "admin";
 }
 
 export const ProtectedRoute = ({ children, requiredType }: ProtectedRouteProps) => {
@@ -30,17 +30,17 @@ export const ProtectedRoute = ({ children, requiredType }: ProtectedRouteProps) 
             </div>
             <CardTitle className="text-2xl">Acesso Restrito</CardTitle>
             <CardDescription>
-              Esta área é exclusiva para {requiredType === "ong" ? "ONGs" : "adotantes"}.
+              Esta área é exclusiva para {requiredType === "ong" ? "ONGs" : requiredType === "admin" ? "administradores" : "adotantes"}.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground text-center">
-              Você está logado como <strong>{user?.type === "ong" ? "ONG" : "adotante"}</strong>.
-              Para acessar esta página, você precisa fazer login com uma conta de {requiredType === "ong" ? "ONG" : "adotante"}.
+              Você está logado como <strong>{user?.type === "ong" ? "ONG" : user?.type === "admin" ? "Administrador" : "adotante"}</strong>.
+              Para acessar esta página, você precisa fazer login com uma conta de {requiredType === "ong" ? "ONG" : requiredType === "admin" ? "Administrador" : "adotante"}.
             </p>
             <div className="flex flex-col gap-2">
               <Button asChild>
-                <Link to={user?.type === "ong" ? "/ong-dashboard" : "/adopter-dashboard"}>
+                <Link to={user?.type === "ong" ? "/ong-dashboard" : user?.type === "admin" ? "/admin/dashboard" : "/adopter-dashboard"}>
                   Ir para Meu Dashboard
                 </Link>
               </Button>

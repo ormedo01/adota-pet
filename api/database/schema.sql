@@ -15,7 +15,7 @@ CREATE TABLE users (
   email VARCHAR(255) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
   name VARCHAR(255) NOT NULL,
-  user_type VARCHAR(20) NOT NULL CHECK (user_type IN ('adopter', 'ong')),
+  user_type VARCHAR(20) NOT NULL CHECK (user_type IN ('adopter', 'ong', 'admin')),
   phone VARCHAR(20),
   
   -- Campos específicos para ONGs

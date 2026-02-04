@@ -2,14 +2,14 @@ import { IsEmail, IsString, MinLength, IsIn, IsOptional, ValidateIf } from 'clas
 import { ApiProperty } from '@nestjs/swagger';
 
 export class RegisterDto {
-  @ApiProperty({ 
+  @ApiProperty({
     example: 'usuario@email.com',
     description: 'Email do usuário'
   })
   @IsEmail({}, { message: 'Email inválido' })
   email: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     example: 'senha123',
     description: 'Senha do usuário',
     minLength: 6
@@ -18,7 +18,7 @@ export class RegisterDto {
   @MinLength(6, { message: 'Senha deve ter no mínimo 6 caracteres' })
   password: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     example: 'João Silva',
     description: 'Nome completo do usuário'
   })
@@ -26,16 +26,16 @@ export class RegisterDto {
   @MinLength(3, { message: 'Nome deve ter no mínimo 3 caracteres' })
   name: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     example: 'adopter',
     description: 'Tipo de usuário',
-    enum: ['adopter', 'ong']
+    enum: ['adopter', 'ong', 'admin']
   })
   @IsString()
-  @IsIn(['adopter', 'ong'], { message: 'Tipo de usuário deve ser adopter ou ong' })
-  user_type: 'adopter' | 'ong';
+  @IsIn(['adopter', 'ong', 'admin'], { message: 'Tipo de usuário deve ser adopter, ong ou admin' })
+  user_type: 'adopter' | 'ong' | 'admin';
 
-  @ApiProperty({ 
+  @ApiProperty({
     example: '(11) 99999-9999',
     description: 'Telefone',
     required: false
@@ -45,7 +45,7 @@ export class RegisterDto {
   phone?: string;
 
   // Campos para ONG
-  @ApiProperty({ 
+  @ApiProperty({
     example: '12.345.678/0001-90',
     description: 'CNPJ (obrigatório para ONGs)',
     required: false
@@ -54,7 +54,7 @@ export class RegisterDto {
   @IsString({ message: 'CNPJ é obrigatório para ONGs' })
   cnpj?: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     example: 'ONG dedicada ao resgate de animais',
     description: 'Descrição da ONG',
     required: false
@@ -89,7 +89,7 @@ export class RegisterDto {
   website?: string;
 
   // Campos para Adotante
-  @ApiProperty({ 
+  @ApiProperty({
     example: '123.456.789-00',
     description: 'CPF (obrigatório para adotantes)',
     required: false

@@ -5,6 +5,7 @@ import { UsersModule } from './users/users.module';
 import { PetsModule } from './pets/pets.module';
 import { ApplicationsModule } from './applications/applications.module';
 import { FavoritesModule } from './favorites/favorites.module';
+import { AdminModule } from './admin/admin.module';
 import { SupabaseModule } from './supabase/supabase.module';
 import { UploadModule } from './upload/upload.module';
 
@@ -20,6 +21,7 @@ import { UploadModule } from './upload/upload.module';
     ApplicationsModule,
     FavoritesModule,
     UploadModule,
+    AdminModule,
   ],
 })
-export class AppModule {}
+export class AppModule { }

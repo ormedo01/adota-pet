@@ -17,6 +17,10 @@ import ONGDashboard from "./pages/ONGDashboard";
 import CreatePet from "./pages/CreatePet";
 import EditPet from "./pages/EditPet";
 import NotFound from "./pages/NotFound";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminPets from "./pages/admin/AdminPets";
+import AdminLayout from "./pages/admin/AdminLayout";
 
 const queryClient = new QueryClient();
 
@@ -35,38 +39,50 @@ const App = () => (
             <Route path="/pets/:id/adopt" element={<AdoptionForm />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route 
-              path="/adopter-dashboard" 
+            <Route
+              path="/adopter-dashboard"
               element={
                 <ProtectedRoute requiredType="adopter">
                   <AdopterDashboard />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/ong-dashboard" 
+            <Route
+              path="/ong-dashboard"
               element={
                 <ProtectedRoute requiredType="ong">
                   <ONGDashboard />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/cadastrar-pet" 
+            <Route
+              path="/cadastrar-pet"
               element={
                 <ProtectedRoute requiredType="ong">
                   <CreatePet />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/editar-pet/:id" 
+            <Route
+              path="/editar-pet/:id"
               element={
                 <ProtectedRoute requiredType="ong">
                   <EditPet />
                 </ProtectedRoute>
-              } 
+              }
             />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute requiredType="admin">
+                  <AdminLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="users" element={<AdminUsers />} />
+              <Route path="pets" element={<AdminPets />} />
+            </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -38,6 +38,16 @@ export const Header = () => {
           Área ONG
         </Link>
       )}
+      {isAuthenticated && user?.type === "admin" && (
+        <>
+          <Link to="/admin/users" className="text-sm font-medium hover:text-primary transition-colors">
+            Usuários
+          </Link>
+          <Link to="/admin/pets" className="text-sm font-medium hover:text-primary transition-colors">
+            Pets
+          </Link>
+        </>
+      )}
     </>
   );
 
@@ -73,7 +83,11 @@ export const Header = () => {
                   <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link to={user?.type === "ong" ? "/ong-dashboard" : "/adopter-dashboard"}>
+                    <Link to={
+                      user?.type === "ong" ? "/ong-dashboard" :
+                        user?.type === "admin" ? "/admin/dashboard" :
+                          "/adopter-dashboard"
+                    }>
                       Dashboard
                     </Link>
                   </DropdownMenuItem>
@@ -98,12 +112,16 @@ export const Header = () => {
                     <div className="pb-4 border-b">
                       <p className="text-sm font-medium">{user?.name}</p>
                       <p className="text-xs text-muted-foreground">
-                        {user?.type === "ong" ? "ONG" : "Adotante"}
+                        {user?.type === "ong" ? "ONG" : user?.type === "admin" ? "Administrador" : "Adotante"}
                       </p>
                     </div>
                     <NavLinks />
                     <Button asChild variant="ghost">
-                      <Link to={user?.type === "ong" ? "/ong-dashboard" : "/adopter-dashboard"}>
+                      <Link to={
+                        user?.type === "ong" ? "/ong-dashboard" :
+                          user?.type === "admin" ? "/admin/dashboard" :
+                            "/adopter-dashboard"
+                      }>
                         Dashboard
                       </Link>
                     </Button>

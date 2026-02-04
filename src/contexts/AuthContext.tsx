@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { authService, type User as ApiUser } from "@/lib/api";
 
-type UserType = "adopter" | "ong";
+type UserType = "adopter" | "ong" | "admin";
 
 interface User {
   id: string;
@@ -72,7 +72,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error: any) {
       console.error('Erro no login:', error);
       throw new Error(
-        error.response?.data?.message || 
+        error.response?.data?.message ||
         'Erro ao fazer login. Verifique suas credenciais.'
       );
     }
@@ -86,7 +86,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error: any) {
       console.error('Erro no registro:', error);
       throw new Error(
-        error.response?.data?.message || 
+        error.response?.data?.message ||
         'Erro ao criar conta. Tente novamente.'
       );
     }
