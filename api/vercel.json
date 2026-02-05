@@ -1,17 +1,5 @@
 {
-    "version": 2,
-    "builds": [
-        {
-            "src": "dist/main.js",
-            "use": "@vercel/node"
-        }
-    ],
-    "routes": [
-        {
-            "src": "/(.*)",
-            "dest": "dist/main.js"
-        }
-    ],
     "buildCommand": "npm run build",
-    "installCommand": "npm ci --legacy-peer-deps"
+    "installCommand": "npm ci --legacy-peer-deps",
+    "outputDirectory": "dist"
 }
