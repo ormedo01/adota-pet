@@ -8,7 +8,12 @@ async function bootstrap() {
 
   // Enable CORS
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:8080',
+    origin: [
+      process.env.FRONTEND_URL || 'http://localhost:8080',
+      'http://localhost:8080',
+      'https://adota-pet-tau.vercel.app',
+      /\.vercel\.app$/,  // Permite qualquer subdomínio vercel.app
+    ],
     credentials: true,
   });
 
@@ -52,7 +57,7 @@ async function bootstrap() {
 
   const port = process.env.PORT || 3000;
   await app.listen(port);
-  
+
   console.log(`🚀 API running on: http://localhost:${port}/api`);
   console.log(`📚 Swagger docs: http://localhost:${port}/api/docs`);
   console.log(`📊 Environment: ${process.env.NODE_ENV}`);
