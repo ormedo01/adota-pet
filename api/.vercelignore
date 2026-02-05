@@ -8,7 +8,6 @@ test
 database
 *.md
 *.sh
-*.js
 *.png
 *.sql
 tsconfig.json
