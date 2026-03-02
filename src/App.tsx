@@ -22,6 +22,7 @@ import AdminUsers from "./pages/admin/AdminUsers";
 import AdminPets from "./pages/admin/AdminPets";
 import AdminLayout from "./pages/admin/AdminLayout";
 import ApplicationDetail from "./pages/ong/ApplicationDetail";
+import About from "./pages/About";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/pets" element={<Pets />} />
+            <Route path="/about" element={<About />} />
             <Route path="/pets/:id" element={<PetDetail />} />
             <Route path="/pet/:id" element={<PetDetailPage />} />
             <Route path="/pets/:id/adopt" element={<AdoptionForm />} />
