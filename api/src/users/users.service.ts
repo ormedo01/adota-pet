@@ -1,9 +1,9 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, InternalServerErrorException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private supabaseService: SupabaseService) {}
+  constructor(private supabaseService: SupabaseService) { }
 
   async create(createUserDto: any) {
     const supabase = this.supabaseService.getClient();
@@ -51,7 +51,8 @@ export class UsersService {
       .single();
 
     if (error) {
-      throw new Error(`Erro ao criar usuário: ${error.message}`);
+      console.error('Supabase insert error details:', error);
+      throw new InternalServerErrorException(`Erro ao criar usuário: ${error.message}`);
     }
 
     return data;

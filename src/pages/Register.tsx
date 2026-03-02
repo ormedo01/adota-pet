@@ -59,7 +59,7 @@ const Register = () => {
 
   const handleAdopterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (adopterData.password !== adopterData.confirmPassword) {
       toast({
         variant: "destructive",
@@ -103,7 +103,7 @@ const Register = () => {
 
   const handleONGSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (ongData.password !== ongData.confirmPassword) {
       toast({
         variant: "destructive",
@@ -148,7 +148,7 @@ const Register = () => {
   return (
     <div className="min-h-screen bg-muted/20">
       <Header />
-      
+
       <div className="container py-12 flex items-center justify-center">
         {step === "select" ? (
           <div className="w-full max-w-4xl">
@@ -166,7 +166,7 @@ const Register = () => {
 
             <div className="grid md:grid-cols-2 gap-6">
               {/* Card Adotante */}
-              <Card 
+              <Card
                 className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:border-primary group"
                 onClick={() => handleSelectUserType("adopter")}
               >
@@ -199,7 +199,7 @@ const Register = () => {
               </Card>
 
               {/* Card ONG */}
-              <Card 
+              <Card
                 className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:border-secondary group"
                 onClick={() => handleSelectUserType("ong")}
               >
@@ -252,11 +252,10 @@ const Register = () => {
                 Voltar
               </Button>
               <div className="flex items-center gap-3">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                  userType === "adopter" 
-                    ? "bg-primary/10" 
-                    : "bg-secondary/10"
-                }`}>
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${userType === "adopter"
+                  ? "bg-primary/10"
+                  : "bg-secondary/10"
+                  }`}>
                   {userType === "adopter" ? (
                     <User className="h-6 w-6 text-primary" />
                   ) : (
@@ -279,106 +278,106 @@ const Register = () => {
                 <form className="space-y-4" onSubmit={handleAdopterSubmit}>
                   <div className="space-y-2">
                     <Label htmlFor="name">Nome Completo *</Label>
-                    <Input 
-                      id="name" 
-                      placeholder="João Silva" 
+                    <Input
+                      id="name"
+                      placeholder="João Silva"
                       value={adopterData.name}
-                      onChange={(e) => setAdopterData({...adopterData, name: e.target.value})}
-                      required 
+                      onChange={(e) => setAdopterData({ ...adopterData, name: e.target.value })}
+                      required
                     />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="email">Email *</Label>
-                    <Input 
-                      id="email" 
-                      type="email" 
-                      placeholder="seu@email.com" 
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="seu@email.com"
                       value={adopterData.email}
-                      onChange={(e) => setAdopterData({...adopterData, email: e.target.value})}
-                      required 
+                      onChange={(e) => setAdopterData({ ...adopterData, email: e.target.value })}
+                      required
                     />
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="phone">Telefone *</Label>
-                      <Input 
-                        id="phone" 
-                        type="tel" 
-                        placeholder="(11) 98765-4321" 
+                      <Input
+                        id="phone"
+                        type="tel"
+                        placeholder="(11) 98765-4321"
                         value={adopterData.phone}
-                        onChange={(e) => setAdopterData({...adopterData, phone: e.target.value})}
-                        required 
+                        onChange={(e) => setAdopterData({ ...adopterData, phone: e.target.value })}
+                        required
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="cpf">CPF *</Label>
-                      <Input 
-                        id="cpf" 
-                        placeholder="000.000.000-00" 
+                      <Input
+                        id="cpf"
+                        placeholder="000.000.000-00"
                         value={adopterData.cpf}
-                        onChange={(e) => setAdopterData({...adopterData, cpf: e.target.value})}
-                        required 
+                        onChange={(e) => setAdopterData({ ...adopterData, cpf: e.target.value })}
+                        required
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="birth_date">Data de Nascimento (opcional)</Label>
-                    <Input 
-                      id="birth_date" 
-                      type="date" 
+                    <Input
+                      id="birth_date"
+                      type="date"
                       value={adopterData.birth_date}
-                      onChange={(e) => setAdopterData({...adopterData, birth_date: e.target.value})}
+                      onChange={(e) => setAdopterData({ ...adopterData, birth_date: e.target.value })}
                     />
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="city">Cidade *</Label>
-                      <Input 
-                        id="city" 
-                        placeholder="São Paulo" 
+                      <Input
+                        id="city"
+                        placeholder="São Paulo"
                         value={adopterData.city}
-                        onChange={(e) => setAdopterData({...adopterData, city: e.target.value})}
-                        required 
+                        onChange={(e) => setAdopterData({ ...adopterData, city: e.target.value })}
+                        required
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="state">Estado *</Label>
-                      <Input 
-                        id="state" 
-                        placeholder="SP" 
-                        maxLength={2} 
+                      <Input
+                        id="state"
+                        placeholder="SP"
+                        maxLength={2}
                         value={adopterData.state}
-                        onChange={(e) => setAdopterData({...adopterData, state: e.target.value.toUpperCase()})}
-                        required 
+                        onChange={(e) => setAdopterData({ ...adopterData, state: e.target.value.toUpperCase() })}
+                        required
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="password">Senha *</Label>
-                    <Input 
-                      id="password" 
-                      type="password" 
-                      placeholder="••••••••" 
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="••••••••"
                       value={adopterData.password}
-                      onChange={(e) => setAdopterData({...adopterData, password: e.target.value})}
-                      required 
+                      onChange={(e) => setAdopterData({ ...adopterData, password: e.target.value })}
+                      required
                     />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="confirmPassword">Confirmar Senha *</Label>
-                    <Input 
-                      id="confirmPassword" 
-                      type="password" 
-                      placeholder="••••••••" 
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      placeholder="••••••••"
                       value={adopterData.confirmPassword}
-                      onChange={(e) => setAdopterData({...adopterData, confirmPassword: e.target.value})}
-                      required 
+                      onChange={(e) => setAdopterData({ ...adopterData, confirmPassword: e.target.value })}
+                      required
                     />
                   </div>
 
@@ -409,59 +408,59 @@ const Register = () => {
                 <form className="space-y-4" onSubmit={handleONGSubmit}>
                   <div className="space-y-2">
                     <Label htmlFor="ongName">Nome da ONG *</Label>
-                    <Input 
-                      id="ongName" 
-                      placeholder="ONG Patinhas Felizes" 
+                    <Input
+                      id="ongName"
+                      placeholder="ONG Patinhas Felizes"
                       value={ongData.name}
-                      onChange={(e) => setOngData({...ongData, name: e.target.value})}
-                      required 
+                      onChange={(e) => setOngData({ ...ongData, name: e.target.value })}
+                      required
                     />
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="cnpj">CNPJ *</Label>
-                      <Input 
-                        id="cnpj" 
-                        placeholder="00.000.000/0000-00" 
+                      <Input
+                        id="cnpj"
+                        placeholder="00.000.000/0000-00"
                         value={ongData.cnpj}
-                        onChange={(e) => setOngData({...ongData, cnpj: e.target.value})}
-                        required 
+                        onChange={(e) => setOngData({ ...ongData, cnpj: e.target.value })}
+                        required
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="ongPhone">Telefone *</Label>
-                      <Input 
-                        id="ongPhone" 
-                        type="tel" 
-                        placeholder="(11) 3456-7890" 
+                      <Input
+                        id="ongPhone"
+                        type="tel"
+                        placeholder="(11) 3456-7890"
                         value={ongData.phone}
-                        onChange={(e) => setOngData({...ongData, phone: e.target.value})}
-                        required 
+                        onChange={(e) => setOngData({ ...ongData, phone: e.target.value })}
+                        required
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="ongEmail">Email da ONG *</Label>
-                    <Input 
-                      id="ongEmail" 
-                      type="email" 
-                      placeholder="contato@ong.com" 
+                    <Input
+                      id="ongEmail"
+                      type="email"
+                      placeholder="contato@ong.com"
                       value={ongData.email}
-                      onChange={(e) => setOngData({...ongData, email: e.target.value})}
-                      required 
+                      onChange={(e) => setOngData({ ...ongData, email: e.target.value })}
+                      required
                     />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="description">Sobre a ONG *</Label>
-                    <Textarea 
-                      id="description" 
+                    <Textarea
+                      id="description"
                       placeholder="Conte um pouco sobre a história e missão da ONG..."
                       rows={4}
                       value={ongData.description}
-                      onChange={(e) => setOngData({...ongData, description: e.target.value})}
+                      onChange={(e) => setOngData({ ...ongData, description: e.target.value })}
                       required
                     />
                   </div>
@@ -469,23 +468,23 @@ const Register = () => {
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="ongCity">Cidade *</Label>
-                      <Input 
-                        id="ongCity" 
-                        placeholder="São Paulo" 
+                      <Input
+                        id="ongCity"
+                        placeholder="São Paulo"
                         value={ongData.city}
-                        onChange={(e) => setOngData({...ongData, city: e.target.value})}
-                        required 
+                        onChange={(e) => setOngData({ ...ongData, city: e.target.value })}
+                        required
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="ongState">Estado *</Label>
-                      <Input 
-                        id="ongState" 
-                        placeholder="SP" 
-                        maxLength={2} 
+                      <Input
+                        id="ongState"
+                        placeholder="SP"
+                        maxLength={2}
                         value={ongData.state}
-                        onChange={(e) => setOngData({...ongData, state: e.target.value.toUpperCase()})}
-                        required 
+                        onChange={(e) => setOngData({ ...ongData, state: e.target.value.toUpperCase() })}
+                        required
                       />
                     </div>
                   </div>
@@ -494,25 +493,25 @@ const Register = () => {
 
                   <div className="space-y-2">
                     <Label htmlFor="ongPassword">Senha *</Label>
-                    <Input 
-                      id="ongPassword" 
-                      type="password" 
-                      placeholder="••••••••" 
+                    <Input
+                      id="ongPassword"
+                      type="password"
+                      placeholder="••••••••"
                       value={ongData.password}
-                      onChange={(e) => setOngData({...ongData, password: e.target.value})}
-                      required 
+                      onChange={(e) => setOngData({ ...ongData, password: e.target.value })}
+                      required
                     />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="ongConfirmPassword">Confirmar Senha *</Label>
-                    <Input 
-                      id="ongConfirmPassword" 
-                      type="password" 
-                      placeholder="••••••••" 
+                    <Input
+                      id="ongConfirmPassword"
+                      type="password"
+                      placeholder="••••••••"
                       value={ongData.confirmPassword}
-                      onChange={(e) => setOngData({...ongData, confirmPassword: e.target.value})}
-                      required 
+                      onChange={(e) => setOngData({ ...ongData, confirmPassword: e.target.value })}
+                      required
                     />
                   </div>
 
@@ -521,22 +520,6 @@ const Register = () => {
                   <Button type="submit" className="w-full" size="lg" variant="secondary" disabled={isLoading}>
                     {isLoading ? "Criando conta..." : "Criar Conta da ONG"}
                   </Button>
-
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <Separator />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-card px-2 text-muted-foreground">
-                        Ou cadastre-se com
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <Button type="button" variant="outline">Google</Button>
-                    <Button type="button" variant="outline">Facebook</Button>
-                  </div>
                 </form>
               )}
 

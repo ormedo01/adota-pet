@@ -10,7 +10,7 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-  ) {}
+  ) { }
 
   async register(registerDto: RegisterDto) {
     // Hash password
@@ -18,8 +18,9 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(registerDto.password, salt);
 
     // Create user
+    const { password, ...userData } = registerDto;
     const user = await this.usersService.create({
-      ...registerDto,
+      ...userData,
       password_hash: passwordHash,
     });
 
@@ -65,7 +66,7 @@ export class AuthService {
 
   async validateUser(userId: string) {
     const user = await this.usersService.findById(userId);
-    
+
     if (!user || !user.is_active) {
       throw new UnauthorizedException('Usuário não encontrado ou inativo');
     }
