@@ -10,6 +10,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { Heart, Building2, User, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import {
+  formatCPF,
+  formatPhone,
+  formatCNPJ,
+  isValidCPF,
+  isValidPhone,
+  isValidCNPJ,
+} from "@/lib/validators";
 
 type UserType = "adopter" | "ong" | null;
 
@@ -20,6 +28,10 @@ const Register = () => {
   const { register } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Erros inline por campo
+  const [adopterErrors, setAdopterErrors] = useState<Record<string, string>>({});
+  const [ongErrors, setOngErrors] = useState<Record<string, string>>({});
 
   // Estados do formulário de adotante
   const [adopterData, setAdopterData] = useState({
@@ -57,17 +69,29 @@ const Register = () => {
     setUserType(null);
   };
 
+  const validateAdopterFields = () => {
+    const errors: Record<string, string> = {};
+
+    if (!isValidCPF(adopterData.cpf))
+      errors.cpf = "CPF inválido. Verifique o número informado.";
+
+    if (!isValidPhone(adopterData.phone))
+      errors.phone = "Telefone inválido. Informe DDD + número (10 ou 11 dígitos).";
+
+    if (adopterData.password.length < 6)
+      errors.password = "A senha deve ter pelo menos 6 caracteres.";
+
+    if (adopterData.password !== adopterData.confirmPassword)
+      errors.confirmPassword = "As senhas não coincidem.";
+
+    setAdopterErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleAdopterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (adopterData.password !== adopterData.confirmPassword) {
-      toast({
-        variant: "destructive",
-        title: "Erro no cadastro",
-        description: "As senhas não coincidem.",
-      });
-      return;
-    }
+    if (!validateAdopterFields()) return;
 
     setIsLoading(true);
 
@@ -77,9 +101,9 @@ const Register = () => {
         password: adopterData.password,
         name: adopterData.name,
         user_type: "adopter",
-        cpf: adopterData.cpf,
+        cpf: adopterData.cpf.replace(/\D/g, ""),
         birth_date: adopterData.birth_date || undefined,
-        phone: adopterData.phone,
+        phone: adopterData.phone.replace(/\D/g, ""),
         city: adopterData.city,
         state: adopterData.state,
       });
@@ -101,17 +125,29 @@ const Register = () => {
     }
   };
 
+  const validateOngFields = () => {
+    const errors: Record<string, string> = {};
+
+    if (!isValidCNPJ(ongData.cnpj))
+      errors.cnpj = "CNPJ inválido. Verifique o número informado.";
+
+    if (!isValidPhone(ongData.phone))
+      errors.phone = "Telefone inválido. Informe DDD + número (10 ou 11 dígitos).";
+
+    if (ongData.password.length < 6)
+      errors.password = "A senha deve ter pelo menos 6 caracteres.";
+
+    if (ongData.password !== ongData.confirmPassword)
+      errors.confirmPassword = "As senhas não coincidem.";
+
+    setOngErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleONGSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (ongData.password !== ongData.confirmPassword) {
-      toast({
-        variant: "destructive",
-        title: "Erro no cadastro",
-        description: "As senhas não coincidem.",
-      });
-      return;
-    }
+    if (!validateOngFields()) return;
 
     setIsLoading(true);
 
@@ -121,9 +157,9 @@ const Register = () => {
         password: ongData.password,
         name: ongData.name,
         user_type: "ong",
-        cnpj: ongData.cnpj,
+        cnpj: ongData.cnpj.replace(/\D/g, ""),
         description: ongData.description,
-        phone: ongData.phone,
+        phone: ongData.phone.replace(/\D/g, ""),
         city: ongData.city,
         state: ongData.state,
       });
@@ -307,9 +343,21 @@ const Register = () => {
                         type="tel"
                         placeholder="(11) 98765-4321"
                         value={adopterData.phone}
-                        onChange={(e) => setAdopterData({ ...adopterData, phone: e.target.value })}
+                        onChange={(e) => {
+                          const formatted = formatPhone(e.target.value);
+                          setAdopterData({ ...adopterData, phone: formatted });
+                          if (adopterErrors.phone) setAdopterErrors({ ...adopterErrors, phone: "" });
+                        }}
+                        onBlur={() => {
+                          if (adopterData.phone && !isValidPhone(adopterData.phone))
+                            setAdopterErrors((p) => ({ ...p, phone: "Telefone inválido. Informe DDD + número (10 ou 11 dígitos)." }));
+                        }}
                         required
+                        className={adopterErrors.phone ? "border-destructive" : ""}
                       />
+                      {adopterErrors.phone && (
+                        <p className="text-xs text-destructive">{adopterErrors.phone}</p>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="cpf">CPF *</Label>
@@ -317,9 +365,21 @@ const Register = () => {
                         id="cpf"
                         placeholder="000.000.000-00"
                         value={adopterData.cpf}
-                        onChange={(e) => setAdopterData({ ...adopterData, cpf: e.target.value })}
+                        onChange={(e) => {
+                          const formatted = formatCPF(e.target.value);
+                          setAdopterData({ ...adopterData, cpf: formatted });
+                          if (adopterErrors.cpf) setAdopterErrors({ ...adopterErrors, cpf: "" });
+                        }}
+                        onBlur={() => {
+                          if (adopterData.cpf && !isValidCPF(adopterData.cpf))
+                            setAdopterErrors((p) => ({ ...p, cpf: "CPF inválido. Verifique o número informado." }));
+                        }}
                         required
+                        className={adopterErrors.cpf ? "border-destructive" : ""}
                       />
+                      {adopterErrors.cpf && (
+                        <p className="text-xs text-destructive">{adopterErrors.cpf}</p>
+                      )}
                     </div>
                   </div>
 
@@ -364,9 +424,16 @@ const Register = () => {
                       type="password"
                       placeholder="••••••••"
                       value={adopterData.password}
-                      onChange={(e) => setAdopterData({ ...adopterData, password: e.target.value })}
+                      onChange={(e) => {
+                        setAdopterData({ ...adopterData, password: e.target.value });
+                        if (adopterErrors.password) setAdopterErrors({ ...adopterErrors, password: "" });
+                      }}
                       required
+                      className={adopterErrors.password ? "border-destructive" : ""}
                     />
+                    {adopterErrors.password && (
+                      <p className="text-xs text-destructive">{adopterErrors.password}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -376,9 +443,16 @@ const Register = () => {
                       type="password"
                       placeholder="••••••••"
                       value={adopterData.confirmPassword}
-                      onChange={(e) => setAdopterData({ ...adopterData, confirmPassword: e.target.value })}
+                      onChange={(e) => {
+                        setAdopterData({ ...adopterData, confirmPassword: e.target.value });
+                        if (adopterErrors.confirmPassword) setAdopterErrors({ ...adopterErrors, confirmPassword: "" });
+                      }}
                       required
+                      className={adopterErrors.confirmPassword ? "border-destructive" : ""}
                     />
+                    {adopterErrors.confirmPassword && (
+                      <p className="text-xs text-destructive">{adopterErrors.confirmPassword}</p>
+                    )}
                   </div>
 
                   <Separator />
@@ -386,22 +460,6 @@ const Register = () => {
                   <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
                     {isLoading ? "Criando conta..." : "Criar Conta"}
                   </Button>
-
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <Separator />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-card px-2 text-muted-foreground">
-                        Ou cadastre-se com
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <Button type="button" variant="outline">Google</Button>
-                    <Button type="button" variant="outline">Facebook</Button>
-                  </div>
                 </form>
               ) : (
                 // Formulário ONG
@@ -424,9 +482,21 @@ const Register = () => {
                         id="cnpj"
                         placeholder="00.000.000/0000-00"
                         value={ongData.cnpj}
-                        onChange={(e) => setOngData({ ...ongData, cnpj: e.target.value })}
+                        onChange={(e) => {
+                          const formatted = formatCNPJ(e.target.value);
+                          setOngData({ ...ongData, cnpj: formatted });
+                          if (ongErrors.cnpj) setOngErrors({ ...ongErrors, cnpj: "" });
+                        }}
+                        onBlur={() => {
+                          if (ongData.cnpj && !isValidCNPJ(ongData.cnpj))
+                            setOngErrors((p) => ({ ...p, cnpj: "CNPJ inválido. Verifique o número informado." }));
+                        }}
                         required
+                        className={ongErrors.cnpj ? "border-destructive" : ""}
                       />
+                      {ongErrors.cnpj && (
+                        <p className="text-xs text-destructive">{ongErrors.cnpj}</p>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="ongPhone">Telefone *</Label>
@@ -435,9 +505,21 @@ const Register = () => {
                         type="tel"
                         placeholder="(11) 3456-7890"
                         value={ongData.phone}
-                        onChange={(e) => setOngData({ ...ongData, phone: e.target.value })}
+                        onChange={(e) => {
+                          const formatted = formatPhone(e.target.value);
+                          setOngData({ ...ongData, phone: formatted });
+                          if (ongErrors.phone) setOngErrors({ ...ongErrors, phone: "" });
+                        }}
+                        onBlur={() => {
+                          if (ongData.phone && !isValidPhone(ongData.phone))
+                            setOngErrors((p) => ({ ...p, phone: "Telefone inválido. Informe DDD + número (10 ou 11 dígitos)." }));
+                        }}
                         required
+                        className={ongErrors.phone ? "border-destructive" : ""}
                       />
+                      {ongErrors.phone && (
+                        <p className="text-xs text-destructive">{ongErrors.phone}</p>
+                      )}
                     </div>
                   </div>
 
@@ -498,9 +580,16 @@ const Register = () => {
                       type="password"
                       placeholder="••••••••"
                       value={ongData.password}
-                      onChange={(e) => setOngData({ ...ongData, password: e.target.value })}
+                      onChange={(e) => {
+                        setOngData({ ...ongData, password: e.target.value });
+                        if (ongErrors.password) setOngErrors({ ...ongErrors, password: "" });
+                      }}
                       required
+                      className={ongErrors.password ? "border-destructive" : ""}
                     />
+                    {ongErrors.password && (
+                      <p className="text-xs text-destructive">{ongErrors.password}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -510,9 +599,16 @@ const Register = () => {
                       type="password"
                       placeholder="••••••••"
                       value={ongData.confirmPassword}
-                      onChange={(e) => setOngData({ ...ongData, confirmPassword: e.target.value })}
+                      onChange={(e) => {
+                        setOngData({ ...ongData, confirmPassword: e.target.value });
+                        if (ongErrors.confirmPassword) setOngErrors({ ...ongErrors, confirmPassword: "" });
+                      }}
                       required
+                      className={ongErrors.confirmPassword ? "border-destructive" : ""}
                     />
+                    {ongErrors.confirmPassword && (
+                      <p className="text-xs text-destructive">{ongErrors.confirmPassword}</p>
+                    )}
                   </div>
 
                   <Separator />
