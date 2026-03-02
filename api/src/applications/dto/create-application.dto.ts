@@ -76,6 +76,9 @@ export class CreateApplicationDto {
   @IsBoolean()
   has_current_pets: boolean;
 
+  @IsBoolean()
+  has_experience: boolean;
+
   @IsOptional()
   @IsString()
   current_pets_description?: string;
@@ -95,9 +98,9 @@ export class CreateApplicationDto {
   financial_readiness: 'ready' | 'partially' | 'learning';
 
   @IsOptional()
-  @IsNumber()
-  @Min(0)
-  monthly_budget?: number;
+  @IsOptional()
+  @IsString()
+  monthly_budget?: string;
 
   // ETAPA 4: Motivação e Compromisso
   @IsString()

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { adminService, type User, type RegisterDto } from "@/lib/api";
+import { formatCPF, formatPhone, isValidCPF, isValidEmail } from "@/lib/validators";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -67,6 +68,18 @@ export default function AdminUsers() {
             if (!editingId && (!newUser.email || !newUser.password)) {
                 toast.error("Email e senha são obrigatórios para novo usuário");
                 return;
+            }
+
+            if (newUser.email && !isValidEmail(newUser.email)) {
+                toast.error("Email inválido");
+                return;
+            }
+
+            if (newUser.user_type === 'adopter' && newUser.cpf) {
+                if (!isValidCPF(newUser.cpf)) {
+                    toast.error("CPF inválido");
+                    return;
+                }
             }
 
             if (editingId) {
@@ -147,7 +160,8 @@ export default function AdminUsers() {
                                     <Label>Telefone</Label>
                                     <Input
                                         value={newUser.phone || ""}
-                                        onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
+                                        onChange={(e) => setNewUser({ ...newUser, phone: formatPhone(e.target.value) })}
+                                        maxLength={15}
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -203,7 +217,8 @@ export default function AdminUsers() {
                                     <Input
                                         value={newUser.cpf || ""}
                                         placeholder="000.000.000-00"
-                                        onChange={(e) => setNewUser({ ...newUser, cpf: e.target.value })}
+                                        onChange={(e) => setNewUser({ ...newUser, cpf: formatCPF(e.target.value) })}
+                                        maxLength={14}
                                     />
                                 </div>
                             )}

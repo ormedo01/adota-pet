@@ -44,7 +44,7 @@ const PetDetail = () => {
     if (!pet) return "";
     const years = pet.age_years || 0;
     const months = pet.age_months || 0;
-    
+
     if (years > 0 && months > 0) {
       return `${years} ano${years > 1 ? 's' : ''} e ${months} ${months > 1 ? 'meses' : 'mês'}`;
     } else if (years > 0) {
@@ -114,7 +114,7 @@ const PetDetail = () => {
   return (
     <div className="min-h-screen bg-muted/20">
       <Header />
-      
+
       <div className="container py-8">
         <Button
           variant="ghost"
@@ -154,7 +154,7 @@ const PetDetail = () => {
               </div>
               <div className="flex items-center text-muted-foreground gap-2">
                 <MapPin className="h-4 w-4" />
-                <span>São Paulo, SP</span>
+                <span>{pet.city}, {pet.state}</span>
               </div>
             </div>
 

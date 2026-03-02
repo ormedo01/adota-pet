@@ -2,9 +2,14 @@ import { Injectable, NotFoundException, ForbiddenException, BadRequestException 
 import { SupabaseService } from '../supabase/supabase.service';
 import { CreateApplicationDto } from './dto/create-application.dto';
 
+import { EmailService } from '../email/email.service';
+
 @Injectable()
 export class ApplicationsService {
-  constructor(private supabaseService: SupabaseService) {}
+  constructor(
+    private supabaseService: SupabaseService,
+    private emailService: EmailService,
+  ) { }
 
   async create(adopterId: string, createApplicationDto: CreateApplicationDto) {
     const supabase = this.supabaseService.getClient();
@@ -74,7 +79,7 @@ export class ApplicationsService {
         .eq('ong_id', userId);
 
       const petIds = pets?.map((p) => p.id) || [];
-      
+
       if (petIds.length > 0) {
         query = query.in('pet_id', petIds);
       } else {
@@ -142,7 +147,7 @@ export class ApplicationsService {
     // Get application and verify ownership
     const { data: application } = await supabase
       .from('adoption_applications')
-      .select('pet_id')
+      .select('pet_id, adopter_id')
       .eq('id', id)
       .single();
 
@@ -152,7 +157,7 @@ export class ApplicationsService {
 
     const { data: pet } = await supabase
       .from('pets')
-      .select('ong_id')
+      .select('ong_id, name')
       .eq('id', application.pet_id)
       .single();
 
@@ -182,6 +187,26 @@ export class ApplicationsService {
 
     if (error) {
       throw new Error(`Erro ao atualizar candidatura: ${error.message}`);
+    }
+
+    // Send email notification
+    try {
+      const { data: adopter } = await supabase
+        .from('users')
+        .select('email')
+        .eq('id', application.adopter_id)
+        .single();
+
+      if (adopter && adopter.email) {
+        await this.emailService.sendStatusUpdateEmail(
+          adopter.email,
+          pet.name,
+          status
+        );
+      }
+    } catch (emailError) {
+      console.error('Failed to send email:', emailError);
+      // Don't throw error here to not rollback the status update
     }
 
     return data;

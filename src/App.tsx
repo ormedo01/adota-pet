@@ -21,6 +21,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminPets from "./pages/admin/AdminPets";
 import AdminLayout from "./pages/admin/AdminLayout";
+import ApplicationDetail from "./pages/ong/ApplicationDetail";
 
 const queryClient = new QueryClient();
 
@@ -68,6 +69,14 @@ const App = () => (
               element={
                 <ProtectedRoute requiredType="ong">
                   <EditPet />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/candidatura/:id"
+              element={
+                <ProtectedRoute requiredType="ong">
+                  <ApplicationDetail />
                 </ProtectedRoute>
               }
             />

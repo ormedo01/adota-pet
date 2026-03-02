@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import { petService, applicationService, type Pet } from "@/lib/api";
+import { Loader2 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,12 +12,12 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { 
-  ArrowLeft, 
-  CheckCircle2, 
-  Home, 
-  Users, 
-  DollarSign, 
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Home,
+  Users,
+  DollarSign,
   Clock,
   Heart,
   AlertCircle
@@ -31,54 +33,46 @@ const AdoptionForm = () => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
-
-  // Mock data - in real app, fetch by ID
-  const pet = {
-    id: id,
-    name: "Thor",
-    age: "2 anos",
-    species: "Cachorro",
-    image: pet3,
-    ong: "ONG Patinhas Felizes",
-  };
+  const [pet, setPet] = useState<Pet | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const [formData, setFormData] = useState({
     // Dados Pessoais
     fullName: user?.name || "",
     email: user?.email || "",
-    phone: "",
-    cpf: "",
+    phone: user?.phone || "",
+    cpf: user?.cpf || "",
     birthDate: "",
-    
+
     // Endereço
     address: "",
-    city: "",
-    state: "",
+    city: user?.city || "",
+    state: user?.state || "",
     zipCode: "",
-    
+
     // Moradia
     housingType: "house",
     housingOwnership: "own",
     hasYard: "",
     yardFenced: "",
-    
+
     // Família
     householdSize: "",
     hasChildren: "",
     childrenAges: "",
     allAgree: false,
-    
+
     // Experiência com Pets
     hasPets: "",
     petsDescription: "",
     hadPetsHistory: "",
-    
+
     // Disponibilidade
     dailyHoursAlone: "",
     whoCaresWhenAway: "",
     financialReady: "",
     monthlyBudget: "",
-    
+
     // Motivação
     adoptionReason: "",
     whatIfMoving: "",
@@ -86,9 +80,64 @@ const AdoptionForm = () => {
     termsAccepted: false,
   });
 
+  useEffect(() => {
+    const loadPet = async () => {
+      if (!id) return;
+      try {
+        const data = await petService.getPetById(id);
+        setPet(data);
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Erro",
+          description: "Não foi possível carregar os dados do pet.",
+        });
+        navigate("/pets");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadPet();
+  }, [id, navigate, toast]);
+
+  const handleZipCodeChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, "");
+    setFormData({ ...formData, zipCode: value });
+
+    if (value.length === 8) {
+      try {
+        const response = await fetch(`https://viacep.com.br/ws/${value}/json/`);
+        const data = await response.json();
+
+        if (data.erro) {
+          toast({
+            variant: "destructive",
+            title: "CEP não encontrado",
+            description: "Verifique o CEP informado.",
+          });
+          return;
+        }
+
+        setFormData(prev => ({
+          ...prev,
+          zipCode: value,
+          address: `${data.logradouro}, ${data.bairro}`,
+          city: data.localidade,
+          state: data.uf,
+        }));
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Erro ao buscar CEP",
+          description: "Tente preencher o endereço manualmente.",
+        });
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.commitment || !formData.termsAccepted) {
       toast({
         variant: "destructive",
@@ -98,18 +147,100 @@ const AdoptionForm = () => {
       return;
     }
 
+    if (!pet) return;
+
     setIsSubmitting(true);
 
-    // Simulação de envio - aqui você faria a chamada à API
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      // Map form data to backend expected format
+      const applicationData = {
+        pet_id: pet.id,
+        full_name: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+        cpf: formData.cpf,
+        // Ensure we send a full ISO ISO-8601 string
+        birth_date: formData.birthDate ? new Date(formData.birthDate).toISOString() : new Date().toISOString(),
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        zip_code: formData.zipCode,
+
+        housing_type: formData.housingType, // 'house' | 'apartment'
+        housing_ownership: formData.housingOwnership === 'rented' ? 'rent' : formData.housingOwnership, // 'own' | 'rent' | 'family'
+        household_size: parseInt(formData.householdSize, 10),
+        has_children: formData.hasChildren === 'yes',
+
+        all_agree: formData.allAgree,
+        has_current_pets: formData.hasPets === 'yes',
+
+        daily_hours_alone: formData.dailyHoursAlone,
+        who_cares_when_away: formData.whoCaresWhenAway,
+
+        financial_readiness: formData.financialReady === 'yes' ? 'ready' : (formData.financialReady === 'partially' ? 'partially' : 'learning'),
+
+        adoption_reason: formData.adoptionReason,
+        what_if_moving: formData.whatIfMoving,
+
+        long_term_commitment: formData.commitment,
+        accepts_follow_up_visits: formData.termsAccepted,
+
+        // Missing fields added
+        has_yard: formData.hasYard === 'yes',
+        yard_fenced: formData.yardFenced === 'yes' || formData.yardFenced === 'partial',
+
+        // Additional info fields
+        monthly_budget: formData.monthlyBudget,
+        children_ages: formData.childrenAges,
+        current_pets_description: formData.petsDescription,
+        has_experience: formData.hadPetsHistory === 'yes',
+      };
+
+      // We cast to any because the frontend interface definition is currently out of sync with backend
+      await applicationService.createApplication(applicationData as any);
+
       toast({
         title: "Candidatura enviada com sucesso! 🎉",
-        description: `Sua candidatura para adotar ${pet.name} foi enviada para ${pet.ong}. Você receberá um retorno em breve!`,
+        description: `Sua candidatura para adotar ${pet.name} foi enviada para ${pet.ong_name || 'a ONG'}. Você receberá um retorno em breve!`,
       });
       navigate(`/adopter-dashboard`);
-    }, 2000);
+
+    } catch (error: any) {
+      console.error("Erro no envio:", error.response?.data);
+      toast({
+        variant: "destructive",
+        title: "Erro ao enviar",
+        description: error.response?.data?.message && Array.isArray(error.response.data.message)
+          ? error.response.data.message[0]
+          : "Ocorreu um erro ao enviar sua candidatura. Verifique os dados.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-muted/20 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!pet) return null;
+
+  const displayImage = pet.image_url || (pet.photos && pet.photos.length > 0 ? pet.photos[0] : "https://placehold.co/600x400?text=Sem+Foto");
+
+  const displayAge = () => {
+    const years = pet.age_years;
+    const months = pet.age_months;
+    if (years && years > 0) return `${years} ano${years > 1 ? 's' : ''}`;
+    if (months && months > 0) return `${months} mes${months > 1 ? 'es' : ''}`;
+    return "Idade não informada";
+  };
+
+  // I will skip this tool call and use multi_replace instead to handle imports AND logic.
+
 
   const nextStep = () => {
     if (currentStep < 4) setCurrentStep(currentStep + 1);
@@ -152,10 +283,10 @@ const AdoptionForm = () => {
   return (
     <div className="min-h-screen bg-muted/20">
       <Header />
-      
+
       <div className="container py-8 max-w-5xl">
-        <Link 
-          to={`/pets/${id}`} 
+        <Link
+          to={`/pets/${id}`}
           className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -167,7 +298,7 @@ const AdoptionForm = () => {
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
               <img
-                src={pet.image}
+                src={displayImage}
                 alt={pet.name}
                 className="w-20 h-20 rounded-xl object-cover"
               />
@@ -176,7 +307,7 @@ const AdoptionForm = () => {
                   Formulário de Adoção: {pet.name}
                 </h2>
                 <p className="text-muted-foreground">
-                  {pet.species} • {pet.age} • {pet.ong}
+                  {pet.species === 'dog' ? 'Cachorro' : pet.species === 'cat' ? 'Gato' : 'Outro'} • {displayAge()} • {pet.ong_name || 'ONG Parceira'}
                 </p>
               </div>
               <Heart className="h-8 w-8 text-primary fill-primary" />
@@ -189,17 +320,15 @@ const AdoptionForm = () => {
           <div className="flex items-center justify-between mb-4">
             {[1, 2, 3, 4].map((step) => (
               <div key={step} className="flex items-center flex-1">
-                <div className={`flex items-center justify-center w-10 h-10 rounded-full font-semibold ${
-                  currentStep >= step 
-                    ? "bg-primary text-white" 
-                    : "bg-muted text-muted-foreground"
-                }`}>
+                <div className={`flex items-center justify-center w-10 h-10 rounded-full font-semibold ${currentStep >= step
+                  ? "bg-primary text-white"
+                  : "bg-muted text-muted-foreground"
+                  }`}>
                   {step}
                 </div>
                 {step < 4 && (
-                  <div className={`flex-1 h-1 mx-2 ${
-                    currentStep > step ? "bg-primary" : "bg-muted"
-                  }`} />
+                  <div className={`flex-1 h-1 mx-2 ${currentStep > step ? "bg-primary" : "bg-muted"
+                    }`} />
                 )}
               </div>
             ))}
@@ -226,7 +355,7 @@ const AdoptionForm = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              
+
               {/* STEP 1: Dados Pessoais */}
               {currentStep === 1 && (
                 <div className="space-y-4">
@@ -241,7 +370,7 @@ const AdoptionForm = () => {
                       <Input
                         id="fullName"
                         value={formData.fullName}
-                        onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                         required
                       />
                     </div>
@@ -251,7 +380,7 @@ const AdoptionForm = () => {
                         id="birthDate"
                         type="date"
                         value={formData.birthDate}
-                        onChange={(e) => setFormData({...formData, birthDate: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
                         required
                       />
                     </div>
@@ -264,7 +393,7 @@ const AdoptionForm = () => {
                         id="email"
                         type="email"
                         value={formData.email}
-                        onChange={(e) => setFormData({...formData, email: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         required
                       />
                     </div>
@@ -275,7 +404,7 @@ const AdoptionForm = () => {
                         type="tel"
                         placeholder="(11) 98765-4321"
                         value={formData.phone}
-                        onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         required
                       />
                     </div>
@@ -287,7 +416,7 @@ const AdoptionForm = () => {
                       id="cpf"
                       placeholder="000.000.000-00"
                       value={formData.cpf}
-                      onChange={(e) => setFormData({...formData, cpf: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, cpf: e.target.value })}
                       required
                       className="md:w-1/2"
                     />
@@ -306,7 +435,7 @@ const AdoptionForm = () => {
                       id="address"
                       placeholder="Rua, número, complemento"
                       value={formData.address}
-                      onChange={(e) => setFormData({...formData, address: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                       required
                     />
                   </div>
@@ -317,7 +446,7 @@ const AdoptionForm = () => {
                       <Input
                         id="city"
                         value={formData.city}
-                        onChange={(e) => setFormData({...formData, city: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                         required
                       />
                     </div>
@@ -328,7 +457,7 @@ const AdoptionForm = () => {
                         placeholder="SP"
                         maxLength={2}
                         value={formData.state}
-                        onChange={(e) => setFormData({...formData, state: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, state: e.target.value })}
                         required
                       />
                     </div>
@@ -338,7 +467,8 @@ const AdoptionForm = () => {
                         id="zipCode"
                         placeholder="00000-000"
                         value={formData.zipCode}
-                        onChange={(e) => setFormData({...formData, zipCode: e.target.value})}
+                        onChange={handleZipCodeChange}
+                        maxLength={8}
                         required
                       />
                     </div>
@@ -351,9 +481,9 @@ const AdoptionForm = () => {
                 <div className="space-y-6">
                   <div className="space-y-3">
                     <Label>Tipo de Moradia *</Label>
-                    <RadioGroup 
+                    <RadioGroup
                       value={formData.housingType}
-                      onValueChange={(value) => setFormData({...formData, housingType: value})}
+                      onValueChange={(value) => setFormData({ ...formData, housingType: value })}
                     >
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="house" id="house" />
@@ -368,9 +498,9 @@ const AdoptionForm = () => {
 
                   <div className="space-y-3">
                     <Label>A moradia é *</Label>
-                    <RadioGroup 
+                    <RadioGroup
                       value={formData.housingOwnership}
-                      onValueChange={(value) => setFormData({...formData, housingOwnership: value})}
+                      onValueChange={(value) => setFormData({ ...formData, housingOwnership: value })}
                     >
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="own" id="own" />
@@ -389,9 +519,9 @@ const AdoptionForm = () => {
 
                   <div className="space-y-3">
                     <Label>Possui quintal ou área externa? *</Label>
-                    <RadioGroup 
+                    <RadioGroup
                       value={formData.hasYard}
-                      onValueChange={(value) => setFormData({...formData, hasYard: value})}
+                      onValueChange={(value) => setFormData({ ...formData, hasYard: value })}
                     >
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="yes" id="yard-yes" />
@@ -407,9 +537,9 @@ const AdoptionForm = () => {
                   {formData.hasYard === "yes" && (
                     <div className="space-y-3">
                       <Label>O quintal é cercado/telado? *</Label>
-                      <RadioGroup 
+                      <RadioGroup
                         value={formData.yardFenced}
-                        onValueChange={(value) => setFormData({...formData, yardFenced: value})}
+                        onValueChange={(value) => setFormData({ ...formData, yardFenced: value })}
                       >
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="yes" id="fenced-yes" />
@@ -436,7 +566,7 @@ const AdoptionForm = () => {
                       type="number"
                       min="1"
                       value={formData.householdSize}
-                      onChange={(e) => setFormData({...formData, householdSize: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, householdSize: e.target.value })}
                       required
                       className="md:w-1/3"
                     />
@@ -444,9 +574,9 @@ const AdoptionForm = () => {
 
                   <div className="space-y-3">
                     <Label>Há crianças na casa? *</Label>
-                    <RadioGroup 
+                    <RadioGroup
                       value={formData.hasChildren}
-                      onValueChange={(value) => setFormData({...formData, hasChildren: value})}
+                      onValueChange={(value) => setFormData({ ...formData, hasChildren: value })}
                     >
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="yes" id="children-yes" />
@@ -466,7 +596,7 @@ const AdoptionForm = () => {
                         id="childrenAges"
                         placeholder="Ex: 5 anos, 8 anos, 12 anos"
                         value={formData.childrenAges}
-                        onChange={(e) => setFormData({...formData, childrenAges: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, childrenAges: e.target.value })}
                         required
                       />
                     </div>
@@ -476,7 +606,7 @@ const AdoptionForm = () => {
                     <Checkbox
                       id="allAgree"
                       checked={formData.allAgree}
-                      onCheckedChange={(checked) => setFormData({...formData, allAgree: checked as boolean})}
+                      onCheckedChange={(checked) => setFormData({ ...formData, allAgree: checked as boolean })}
                     />
                     <Label htmlFor="allAgree" className="font-normal cursor-pointer leading-relaxed">
                       Todos os moradores da casa estão de acordo com a adoção? *
@@ -490,9 +620,9 @@ const AdoptionForm = () => {
                 <div className="space-y-6">
                   <div className="space-y-3">
                     <Label>Você possui outros pets atualmente? *</Label>
-                    <RadioGroup 
+                    <RadioGroup
                       value={formData.hasPets}
-                      onValueChange={(value) => setFormData({...formData, hasPets: value})}
+                      onValueChange={(value) => setFormData({ ...formData, hasPets: value })}
                     >
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="yes" id="pets-yes" />
@@ -513,7 +643,7 @@ const AdoptionForm = () => {
                         placeholder="Espécie, idade, temperamento..."
                         rows={3}
                         value={formData.petsDescription}
-                        onChange={(e) => setFormData({...formData, petsDescription: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, petsDescription: e.target.value })}
                         required
                       />
                     </div>
@@ -526,7 +656,7 @@ const AdoptionForm = () => {
                       placeholder="Compartilhe sua experiência com animais..."
                       rows={4}
                       value={formData.hadPetsHistory}
-                      onChange={(e) => setFormData({...formData, hadPetsHistory: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, hadPetsHistory: e.target.value })}
                       required
                     />
                   </div>
@@ -544,7 +674,7 @@ const AdoptionForm = () => {
                       id="dailyHoursAlone"
                       placeholder="Ex: 4 horas"
                       value={formData.dailyHoursAlone}
-                      onChange={(e) => setFormData({...formData, dailyHoursAlone: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, dailyHoursAlone: e.target.value })}
                       required
                     />
                   </div>
@@ -556,7 +686,7 @@ const AdoptionForm = () => {
                       placeholder="Familiares, amigos, hotel para pets..."
                       rows={2}
                       value={formData.whoCaresWhenAway}
-                      onChange={(e) => setFormData({...formData, whoCaresWhenAway: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, whoCaresWhenAway: e.target.value })}
                       required
                     />
                   </div>
@@ -571,9 +701,9 @@ const AdoptionForm = () => {
                     <p className="text-sm text-muted-foreground">
                       (Alimentação, vacinas, veterinário, emergências)
                     </p>
-                    <RadioGroup 
+                    <RadioGroup
                       value={formData.financialReady}
-                      onValueChange={(value) => setFormData({...formData, financialReady: value})}
+                      onValueChange={(value) => setFormData({ ...formData, financialReady: value })}
                     >
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="yes" id="financial-yes" />
@@ -592,7 +722,7 @@ const AdoptionForm = () => {
                       id="monthlyBudget"
                       placeholder="Ex: R$ 300,00"
                       value={formData.monthlyBudget}
-                      onChange={(e) => setFormData({...formData, monthlyBudget: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, monthlyBudget: e.target.value })}
                       required
                       className="md:w-1/2"
                     />
@@ -610,7 +740,7 @@ const AdoptionForm = () => {
                       placeholder="Conte-nos suas motivações para essa adoção..."
                       rows={4}
                       value={formData.adoptionReason}
-                      onChange={(e) => setFormData({...formData, adoptionReason: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, adoptionReason: e.target.value })}
                       required
                     />
                   </div>
@@ -622,7 +752,7 @@ const AdoptionForm = () => {
                       placeholder="Sua resposta..."
                       rows={3}
                       value={formData.whatIfMoving}
-                      onChange={(e) => setFormData({...formData, whatIfMoving: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, whatIfMoving: e.target.value })}
                       required
                     />
                   </div>
@@ -640,10 +770,10 @@ const AdoptionForm = () => {
                         <Checkbox
                           id="commitment"
                           checked={formData.commitment}
-                          onCheckedChange={(checked) => setFormData({...formData, commitment: checked as boolean})}
+                          onCheckedChange={(checked) => setFormData({ ...formData, commitment: checked as boolean })}
                         />
                         <Label htmlFor="commitment" className="font-normal cursor-pointer leading-relaxed">
-                          Declaro que estou ciente de que a adoção é um compromisso de longo prazo 
+                          Declaro que estou ciente de que a adoção é um compromisso de longo prazo
                           e que me responsabilizo pelo bem-estar do animal por toda sua vida.
                         </Label>
                       </div>
@@ -652,10 +782,10 @@ const AdoptionForm = () => {
                         <Checkbox
                           id="termsAccepted"
                           checked={formData.termsAccepted}
-                          onCheckedChange={(checked) => setFormData({...formData, termsAccepted: checked as boolean})}
+                          onCheckedChange={(checked) => setFormData({ ...formData, termsAccepted: checked as boolean })}
                         />
                         <Label htmlFor="termsAccepted" className="font-normal cursor-pointer leading-relaxed">
-                          Concordo que a ONG pode realizar visitas de acompanhamento e que forneci 
+                          Concordo que a ONG pode realizar visitas de acompanhamento e que forneci
                           informações verdadeiras neste formulário.
                         </Label>
                       </div>
@@ -669,7 +799,7 @@ const AdoptionForm = () => {
                         <div className="text-sm text-muted-foreground">
                           <p className="font-medium mb-1">Próximos passos:</p>
                           <ul className="list-disc list-inside space-y-1">
-                            <li>Sua candidatura será analisada pela {pet.ong}</li>
+                            <li>Sua candidatura será analisada pela {pet.ong_name || 'ONG'}</li>
                             <li>Você receberá um retorno em até 7 dias úteis</li>
                             <li>Pode ser solicitada uma entrevista e/ou visita</li>
                             <li>Acompanhe o status no seu dashboard</li>
@@ -703,8 +833,8 @@ const AdoptionForm = () => {
                 Próximo
               </Button>
             ) : (
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={isSubmitting || !formData.commitment || !formData.termsAccepted}
                 className="min-w-[140px]"
               >
