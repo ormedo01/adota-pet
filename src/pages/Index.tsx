@@ -13,16 +13,16 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       <Header />
-      
+
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${heroImage})` }}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/40" />
         </div>
-        
+
         <div className="relative container py-20 md:py-32">
           <div className="max-w-2xl space-y-6">
             <h1 className="text-4xl md:text-6xl font-bold leading-tight">
@@ -32,7 +32,7 @@ const Index = () => {
               </span>
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground">
-              Conectamos ONGs e adotantes em uma plataforma única e segura. 
+              Conectamos ONGs e adotantes em uma plataforma única e segura.
               Milhares de pets esperando por um lar cheio de amor.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
@@ -107,49 +107,6 @@ const Index = () => {
                 </p>
               </CardContent>
             </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Pets Section */}
-      <section className="py-16 md:py-24">
-        <div className="container">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Pets em Destaque
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Conheça alguns dos pets que estão esperando por você
-            </p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { image: pet1, name: "Max", age: "6 meses" },
-              { image: pet2, name: "Luna", age: "3 meses" },
-              { image: pet3, name: "Thor", age: "2 anos" },
-              { image: pet4, name: "Mia", age: "1 ano" },
-            ].map((pet, index) => (
-              <Card key={index} className="overflow-hidden group hover:shadow-lg transition-all">
-                <div className="relative aspect-square overflow-hidden">
-                  <img
-                    src={pet.image}
-                    alt={pet.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                  />
-                </div>
-                <CardContent className="p-4">
-                  <h3 className="font-bold text-lg">{pet.name}</h3>
-                  <p className="text-sm text-muted-foreground">{pet.age}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          <div className="text-center mt-8">
-            <Button size="lg" asChild>
-              <Link to="/pets">Ver Todos os Pets</Link>
-            </Button>
           </div>
         </div>
       </section>
